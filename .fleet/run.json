@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "type": "jps-build",
+            "name": "lox build",
+        },
+        {
+            "type": "jps-run",
+            "name": "generate ast",
+            "workingDir": "out/production/jlox",
+            "mainClass": "com.craftinginterpreters.tool.GenerateAst",
+            "module": "com.craftinginterpreters.tool.GenerateAst",
+            "args": ["../../../src/com/craftinginterpreters/lox"],
+            "dependsOn": ["lox build"],
+        },
+        {
+            "type": "jps-run",
+            "name": "lox run",
+            "workingDir": "out/production/jlox",
+            "mainClass": "com.craftinginterpreters.lox.Lox",
+            "module": "com.craftinginterpreters.lox.Lox",
+            "args": ["../../../test/assign-variable.lox"],
+            "dependsOn": ["lox build"],
+        },
+    ]
+}
