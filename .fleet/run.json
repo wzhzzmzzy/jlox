@@ -19,7 +19,7 @@
             "workingDir": "out/production/jlox",
             "mainClass": "com.craftinginterpreters.lox.Lox",
             "module": "com.craftinginterpreters.lox.Lox",
-            "args": ["../../../test/execute-block.lox"],
+            "args": ["../../../test/for-example.lox"],
             "dependsOn": ["lox build"],
         },
     ]
