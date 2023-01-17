@@ -207,3 +207,44 @@ declaration 对于 Parser 来说，永远是优先级最高的解析方式，所
 当我们解析赋值语句时，我们将左值和右值都当作一个普通表达式。如果我们发现左值是一个变量，那我们就可以生成一个赋值语句，否则将其直接返回。
 
 与其他二元运算符不同，赋值运算符是右结合的，所以我们并不使用循环来反复解析语句，而是使用了递归来解析右值当中的赋值语句。
+
+# [Scope](https://craftinginterpreters.com/statements-and-state.html#scope)
+
+作用域有两种，一种被称为词法作用域（Lexical scope）或者静态作用域（static scope），这种情况只需静态阅读代码即可知道该变量在何处声明；另一种则是动态作用域（dynamic scope），需要在运行时才能清楚地知道变量具体的值是什么。词法作用域是经典的，不需要过多解释。动态作用域一般常见于对象的方法或属性上，例如：
+
+    class Saxophone {
+        play() {
+            print "Careless Whisper";
+        }
+    }
+
+    class GolfClub {
+        play() {
+            print "Fore!";
+        }
+    }
+
+    fun playIt(thing) {
+        thing.play();
+    }
+
+这里没法提前知道 thing 指的是 GolfClub 还是 Saxophone，只有在调用时才能知道。
+
+Scope 和 envirnment 是一体两面，前者是概念上的名词，后者是实现机制。代码工作时，语法树节点会改变环境，例如我们可以使用大括号来分隔内外变量的作用域。
+
+# [Nesting and shadowing](https://craftinginterpreters.com/statements-and-state.html#nesting-and-shadowing)
+
+内部作用域声明了和外部作用域相同的名字的变量，这种情况下，外部的变量应该被隐藏起来，但不受内部变量的赋值和操作影响到。这种情况被称为 shadowing。而内部作用域当然也可以访问外部的变量，当没有触发隐藏机制时，内外作用域应该互相嵌套。
+
+实现这种机制的方式是将环境链接到一起，访问时，从内向外寻址。内层是局部作用域，越外层作用域越大，直到顶层。
+
+# [Block syntax and semantics](https://craftinginterpreters.com/statements-and-state.html#block-syntax-and-semantics)
+
+为了实现环境嵌套的效果，需要让语言支持 block 语法。
+    statement      → exprStmt
+                    | printStmt
+                    | block ;
+
+    block          → "{" declaration* "}" ;
+    
+对于 block 来说，他就是一系列语句的集合。

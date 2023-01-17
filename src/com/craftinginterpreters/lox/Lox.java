@@ -12,6 +12,7 @@ public class Lox {
     private static final Interpreter interpreter = new Interpreter();
     static boolean hadError = false;
     static boolean hadRuntimeError = false;
+    static boolean isPrompt = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -20,6 +21,7 @@ public class Lox {
         } else if (args.length == 1) {
             runFile(args[0]);
         } else {
+            isPrompt = true;
             runPrompt();
         }
     }
@@ -55,7 +57,7 @@ public class Lox {
         // Stop if there was a syntax error.
         if (hadError) return;
 
-        interpreter.interpret(statements);
+        interpreter.interpret(statements, isPrompt);
     }
 
     static void error(int line, String message) {
