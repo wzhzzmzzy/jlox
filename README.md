@@ -248,3 +248,63 @@ Scope 和 envirnment 是一体两面，前者是概念上的名词，后者是�
     block          → "{" declaration* "}" ;
     
 对于 block 来说，他就是一系列语句的集合。
+
+# [Conditional Execution](https://craftinginterpreters.com/control-flow.html#conditional-execution)
+
+通常来说，控制流大致分为两种：
+–	条件或分支控制流用于不执行某些代码；
+–	循环控制流用于多次执行相同的代码。
+
+简单起见，我们不实现三元条件运算符，只是添加一个 if - else 关键字。
+
+    statement      → exprStmt
+                    | ifStmt
+                    | printStmt
+                    | block ;
+    ifStmt         → "if" "(" expression ")" statement
+                    ( "else" statement )? ;
+
+通常，if 语句由一个条件表达式，两个语句组成。
+
+# [Logical Operators](https://craftinginterpreters.com/control-flow.html#logical-operators)
+
+我们需要特殊处理逻辑运算符，因为他们具有特殊的短路机制：如果通过左侧的值就可以知道整个表达式的值，我们就不会继续计算后面的数据了。我们需要为逻辑或、逻辑且两个运算符添加专门的语法描述：
+
+    expression     → assignment ;
+    assignment     → IDENTIFIER "=" assignment
+                    | logic_or ;
+    logic_or       → logic_and ( "or" logic_and )* ;
+    logic_and      → equality ( "and" equality )* ;
+
+我们并没有直接在 logic_or 情况下使用 equality 或者 assignment，而是使用了 logic_and。
+
+# [While Loops](https://craftinginterpreters.com/control-flow.html#while-loops)
+
+    statement      → exprStmt
+                    | ifStmt
+                    | printStmt
+                    | whileStmt
+                    | block ;
+    whileStmt      → "while" "(" expression ")" statement ;
+
+while 循环的实现非常容易，只需要借助 Java 的 while 直接调用即可。
+
+# [For Loops](https://craftinginterpreters.com/control-flow.html#for-loops)
+
+    statement      → exprStmt
+                    | forStmt
+                    | ifStmt
+                    | printStmt
+                    | whileStmt
+                    | block ;
+    forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+                    expression? ";"
+                    expression? ")" statement ;
+
+for 循环是完全可以像 while 循环一样使用的，所以括号里的所有表达式都可以为空。
+
+1.	第一个子句的工作是初始化，通常是个表达式，也允许声明变量。
+2.	第二个子句是条件，与 while 一致。
+3.	最后一个子句是累加，在每次循环迭代结束时做一些副作用工作。
+
+for 语句是至今为止最复杂的语句，不过没有使用到任何非已有的工具。我们可以将其看作一个 while 语句的语法糖，所以，处理它的工序被称为脱糖（desugaring）。具体的流程是，将子句拆分开之后，将 for 循环体和 increment 组成一个 block，将条件和循环 block 组成 while 语句，将 while 和初始化子句组成 body。
