@@ -6,8 +6,10 @@ class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void> {
 
     private Environment environment = new Environment();
+    private boolean isPrompt = false;
 
-    void interpret(List<Stmt> statements) {
+    void interpret(List<Stmt> statements, boolean isPrompt) {
+        this.isPrompt = isPrompt;
         try {
             for (Stmt statement : statements) {
                 execute(statement);
@@ -22,9 +24,32 @@ class Interpreter implements Expr.Visitor<Object>,
     private void execute(Stmt stmt) {
         stmt.accept(this);
     }
+
+    void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.environment = previous;
+        }
+    }
+
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
-        evaluate(stmt.expression);
+        Object value = evaluate(stmt.expression);
+        if (this.isPrompt) {
+            System.out.println(stringify(value));
+        }
         return null;
     }
 
