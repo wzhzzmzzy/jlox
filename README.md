@@ -308,3 +308,64 @@ for 循环是完全可以像 while 循环一样使用的，所以括号里的所
 3.	最后一个子句是累加，在每次循环迭代结束时做一些副作用工作。
 
 for 语句是至今为止最复杂的语句，不过没有使用到任何非已有的工具。我们可以将其看作一个 while 语句的语法糖，所以，处理它的工序被称为脱糖（desugaring）。具体的流程是，将子句拆分开之后，将 for 循环体和 increment 组成一个 block，将条件和循环 block 组成 while 语句，将 while 和初始化子句组成 body。
+
+# [Function Calls](https://craftinginterpreters.com/functions.html#function-calls)
+
+函数调用的语法一般是：average(1, 2);，但 callee 事实上可以是任何返回了函数的表达式，所以也可以是这样：getCallback()()。所以我们对函数调用的语法定义如下：
+
+    unary          → ( "!" | "-" ) unary | call ;
+    call           → primary ( "(" arguments? ")" )* ;
+    arguments      → expression ( "," expression )* ;
+
+一个表达式后面可以跟着0个或多个调用括号和参数列表，如果是0个，那就是一个普通表达式。
+
+为了保存函数出错时调用函数的位置，我们存储调用表达式时，将闭合括号一起存储到表达式当中：
+
+    "Call     : Expr callee, Token paren, List<Expr> arguments",
+# [Maximum argument counts](https://craftinginterpreters.com/functions.html#maximum-argument-counts)
+
+许多语言会限制函数调用参数列表的长度，例如 C 语言要求支持至少 127 个参数，Java 要求支持不多于 255 个参数。为了与后续的字节码解释器保持一致，我们这边也添加 255 个参数的数量限制。
+
+# [Interpreting function calls](https://craftinginterpreters.com/functions.html#interpreting-function-calls)
+
+可能比较令人困惑的一点是，我们在实现函数之前实现了调用模块。不过不太重要。在调用函数时，我们首先计算 callee，然后依次计算参数列表中每个参数的值，然后将这些准备工作存放到一个专门的 LoxCallable 对象当中。
+
+当然，我们还需要对 callee 的类型做检查，并及时抛出一个 RuntimeError。
+
+# [Native Functions](https://craftinginterpreters.com/functions.html#native-functions)
+
+原生方法对程序语言来说非常重要，用户大量与操作系统交互的操作都依赖语言提供的原生方法。这里，我们实现方法主要依赖 Java 内置的一些原生函数。例如调用系统时钟时，会使用System.currentTimeMillis。
+
+# [Function Declarations](https://craftinginterpreters.com/functions.html#function-declarations)
+
+这里，我们给函数定义添加语法说明：
+
+    declaration    → funDecl
+                    | varDecl
+                    | statement ;
+    funDecl        → "fun" function ;
+    function       → IDENTIFIER "(" parameters? ")" block ;
+    parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
+
+有了这个，我们就可以声明函数了。
+
+对于函数来说，核心是两个部分，参数列表和代码块。实现函数调用时的操作其实非常简单，就是按照参数列表的定义顺序，将表达式一一求值，然后在新的envirnment中定义一遍，而后在新的envirnment中执行代码块。
+
+# [Return Statements](https://craftinginterpreters.com/functions.html#return-statements)
+
+目前来看，我们的函数还不能带回任何数据，所以我们需要添加返回语句。
+
+statement      → exprStmt
+                | forStmt
+                | ifStmt
+                | printStmt
+                | returnStmt
+                | whileStmt
+                | block ;
+returnStmt     → "return" expression? ";" ;
+
+同时，事实上任何一个 Lox function 都需要返回一些东西，即使它并没有返回语句。也就是默认返回 nil 值。当我们实现 Return 语句时，我们会发现，他的特性很像是异常：他会一下子打破函数调用过程当中的所有调用链，并结束函数调用 LoxFunction.call，使其返回结果。因此，我们使用 throw 来实现它。
+
+# [Local Functions and Closures](https://craftinginterpreters.com/functions.html#local-functions-and-closures)
+
+我们的函数目前还存在一个漏洞，也就是不支持闭包。前面实现的函数作用域，直接关联了 global 作用域，但目前我们支持在任何一个位置的局部作用域声明函数，这会导致局部函数的闭包和递归无法正常工作。要修复这个问题也很简单，添加一个闭包参数，将定义时的环境传入即可。
