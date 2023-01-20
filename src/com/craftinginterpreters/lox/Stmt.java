@@ -38,10 +38,8 @@ abstract class Stmt {
     final Expr expression;
   }
   static class Function extends Stmt {
-    Function(Token name, List<Token> params, List<Stmt> body) {
-      this.name = name;
-      this.params = params;
-      this.body = body;
+    Function(Expr function) {
+      this.function = function;
     }
 
     @Override
@@ -49,9 +47,7 @@ abstract class Stmt {
       return visitor.visitFunctionStmt(this);
     }
 
-    final Token name;
-    final List<Token> params;
-    final List<Stmt> body;
+    final Expr function;
   }
   static class If extends Stmt {
     If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
