@@ -19,7 +19,7 @@
             "workingDir": "out/production/jlox",
             "mainClass": "com.craftinginterpreters.lox.Lox",
             "module": "com.craftinginterpreters.lox.Lox",
-            "args": ["../../../test/func-closure.lox"],
+            "args": ["../../../test/method-assign-undefined-var.lox"],
             "dependsOn": ["lox build"],
         },
     ]

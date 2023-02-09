@@ -1,0 +1,8 @@
+class Bacon {
+  eat() {
+    this.someThing = "Crunch crunch crunch!";
+    print this.somgThing;
+  }
+}
+
+Bacon().eat(); // Prints "Crunch crunch crunch!".
