@@ -19,7 +19,7 @@
             "workingDir": "out/production/jlox",
             "mainClass": "com.craftinginterpreters.lox.Lox",
             "module": "com.craftinginterpreters.lox.Lox",
-            "args": ["../../../test/call-superclass-method.lox"],
+            "args": ["../../../test/subclass.lox"],
             "dependsOn": ["lox build"],
         },
     ]
